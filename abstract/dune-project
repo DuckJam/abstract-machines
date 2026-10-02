@@ -1,0 +1,26 @@
+(lang dune 3.24)
+
+(name abstract)
+
+(generate_opam_files true)
+
+(source
+ (github DuckJam/abstract-machines))
+
+(authors "David Jaramillo<author@example.com>")
+
+(maintainers "David Jaramillo <maintainer@example.com>")
+
+(license LICENSE)
+
+(documentation https://url/to/documentation)
+
+(package
+ (name abstract)
+ (synopsis "An environment for exploring abstract machines")
+ (description "A longer description")
+ (depends ocaml)
+ (tags
+  ("add topics" "to describe" your project)))
+
+; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html
