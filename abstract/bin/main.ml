@@ -33,7 +33,7 @@ step (Lam lam, ρ, Ar(e, ρ', κ))
 step (Lam lam, ρ, Fn(x :=> e, ρ', κ))
    = (e, ρ' // [x ==> Clo (lam, ρ)], κ)
 *)
-let terminal step (isFinal: bool) (s0 : State) : State
+let rec terminal step (isFinal: bool) (s0 : State) : State
     | isFinal s0 = s0
     | _  = terminal step isFinal (step isFinal)
 
@@ -46,7 +46,7 @@ let inject (exp : Expr) : State =
     let r0 : Env = fun x -> error ( "no binding for " ++ x )
 
 
-let eval ( exp : Expr) : int =  
+let rec eval ( exp : Expr) : int =  
     match exp with
     | EInt n -> n
     | EBin op e1 e2 -> 
