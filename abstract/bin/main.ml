@@ -1,25 +1,30 @@
-type Op = Add | Mul | Sub | Div
-type Var = String
-type Lambda = Var :=> Expr
-type Expr = EVar Var | EAbs Var Expr | EApp Expr Expr
-          | EInt Int | EBinOp Op Expr Expr
-          | Ref Var
-          | Lam Lambda
+type op = Add | Mul | Sub | Div
+type var = string
+type lambda = (Var * Expr)
+type expr = EVar of var 
+          | EAbs of lambda
+          | EApp of (expr * expr)
+          | EInt of int 
+          | EBinOp of (op * expr * expr)
 
 
-type State = (Expr, Env, Kont)
-type D = Closure (Lambda, Env)
-type Env = Var -> D
-type Kont = Mt 
-          | Ar (Expr, Env, Kont)
-          | Fn (Lambda, Env, Kont)
+type state = (expr * env * kont)
+(* domain of values / dentorable values , 
+closure is lambda term paired with environment that defines the values of its free variables*)
+type data = Closure (lambda * env)
+type env = Var -> D
+type kont = Mt 
+          | Ar of (expr * env * kont)
+          | Fn of (lambda * env * kont)
 
-let step (before: State) : State = 
+let step (before: state) : state = 
     match before with
-    | (Ref, Env, Kont) = 
-    | (EApp, Env, Kont)
-    | (Lam, Env, Ar)
-    | (Lam, )
+    | (evar * env * kont) (x , r, k) -> 
+        let unwrapClosure (lam , r') = r(x) 
+        in (lam, r', k)
+    | (EApp, env, kont) (EApp e1 e2, r, k) -> (e1, r, Ar (e2, r, k))
+    | (Lam, Env, Ar) (lam, r, (e, r', k )) ->(e, r', Fn (lam, r, k))
+    | (Lam, Env, Fn) (lam, r, (x :=> e, r', k)) -> (e, r' )
 (*
 step (Ref x, ρ, κ)
    = (Lam lam,ρ',κ) where Clo (lam, ρ') = ρ(x)
@@ -33,20 +38,35 @@ step (Lam lam, ρ, Ar(e, ρ', κ))
 step (Lam lam, ρ, Fn(x :=> e, ρ', κ))
    = (e, ρ' // [x ==> Clo (lam, ρ)], κ)
 *)
-let rec terminal step (isFinal: bool) (s0 : State) : State
+
+(*
+ A few auxiliary definitions handle function extension in this code:
+
+(==>) :: a -> b -> (a,b)
+(==>) x y = (x,y)
+
+
+(//) :: Eq a => (a -> b) -> [(a,b)] -> (a -> b)
+(//) f [(x,y)] = \ x' ->
+                 if (x == x')
+                 then y
+                 else f(x')
+
+*)
+let rec terminal step (isFinal: bool) (s0 : state) : state
     | isFinal s0 = s0
     | _  = terminal step isFinal (step isFinal)
 
-let isFinal (s0 : State) : bool = 
+let isFinal (s0 : state) : bool = 
     match s0 with
-    |(Lam _, Env, Mt) = True
+    |(EAbs _, env, Mt) = True
     | _ = False
 
-let inject (exp : Expr) : State = 
-    let r0 : Env = fun x -> error ( "no binding for " ++ x )
+let inject (exp : expr) : state = 
+    let r0 : env = fun x -> error ( "no binding for " ++ x )
 
 
-let rec eval ( exp : Expr) : int =  
+let rec eval ( exp : expr) : int =  
     match exp with
     | EInt n -> n
     | EBin op e1 e2 -> 
