@@ -19,14 +19,14 @@ type kont = Mt
 
 let step (before: state) : state = 
     match before with
-    | (x , r, k) : evar * env * kont  -> 
+    | ((EVar x , r, k) : expr * env * kont) -> 
         let unwrapClosure (lam , r') = r(x) 
         in (lam, r', k)
-    | (EApp, env, kont) (EApp e1 e2, r, k) -> (e1, r, Ar (e2, r, k))
-    | (EAbs, env, Ar) (lam, r, (e, r', k )) ->(e, r', Fn (lam, r, k))
-    | (EAbs, env, Fn) (lam, r, (x :=> e, r', k)) -> (e, r' )
+    | ((EApp (e1, e2) , r , k ) : expr * env * kont) -> (e1, r, Ar (e2, r, k))
+    | ((EAbs lam, r, Ar (e, r', k )) : expr * env * kont) ->(e, r', Fn (lam, r, k))
+    | ((EAbs lam, r, Fn(e, r', k)) : expr * env * kont) -> (e, r', k)
 
-let rec terminal step (isFinal: bool) (s0 : state) : state
+let rec terminal step (isFinal: bool) (s0 : state) : state 
     | isFinal s0 = s0
     | _  = terminal step isFinal (step isFinal)
 
