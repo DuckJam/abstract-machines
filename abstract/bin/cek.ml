@@ -1,56 +1,93 @@
 type op = Add | Mul | Sub | Div
 type var = string
-type lambda = (var * expr)
+
 type expr = EVar of var 
           | EAbs of lambda
           | EApp of (expr * expr)
           | EInt of int 
           | EBinOp of (op * expr * expr)
+          | EReturn of value
+and lambda = (var * expr)
+and value = VClosure of (lambda * env)
+        | VInt of int
+and env = (var * value) list
+(*list.assoc key alist (kxV list _> k ->V)*)
+and kont = Empty 
+          | KAppArg of (expr * env * kont)
+          | KAppFun of (lambda * env * kont)
+          | KBinApp1 of (op * expr * env * kont)
+          | KBinApp2 of (op * value * env * kont)
+          | KReturn of (value * expr * env * kont)
 
 type state = (expr * env * kont)
 (* domain of values / dentorable values , 
 closure is lambda term paired with environment that defines the values of its free variables*)
-type d = closure
-type closure = (lambda * env)
-type env = var -> value
-type kont = Mt 
-          | Ar of (expr * env * kont)
-          | Fn of (lambda * env * kont)
 
-let step (before: state) : state = 
-    match before with
-    | ((EVar x , r, k) : expr * env * kont) -> 
-        let unwrapClosure (lam , r') = r(x) 
-        in (lam, r', k)
-    | ((EApp (e1, e2) , r , k ) : expr * env * kont) -> (e1, r, Ar (e2, r, k))
-    | ((EAbs lam, r, Ar (e, r', k )) : expr * env * kont) ->(e, r', Fn (lam, r, k))
-    | ((EAbs lam, r, Fn(e, r', k)) : expr * env * kont) -> (e, r', k)
+let unwrapClosure v : lambda = 
+    match v with
+    | VClosure (lam, r) -> lam
+    | _ -> invalid_arg "Trying to unwrap something that isn't a closure"
 
-let rec terminal step (isFinal: bool) (s0 : state) : state 
-    | isFinal s0 = s0
-    | _  = terminal step isFinal (step isFinal)
+
+let step (s: state) : state = 
+    match s with
+    | (EVar x , r, k) -> 
+        let v = List.assoc x r in (EReturn v, r, k)
+    | (EApp (e1, e2), r , k ) -> (e1, r, KAppArg (e2, r, k))
+    | (EAbs lam, r, KAppArg (e, r', k )) -> (e, r', KAppFun (lam, r, k))
+    | (EAbs lam, r, KAppFun (lam', r', k )) -> (EReturn (VClosure(lam, r)), r', k)
+    | (EAbs lam, r, k) -> (EReturn (VClosure(lam, r)), r, k)
+    | (EInt n, r, k ) -> (EReturn (VInt n), r, k)
+    | (EBinOp (op, e1, e2), r, k ) -> (e1, r, KBinApp1 (op, e2, r, k))
+    | (EReturn v, r', k') ->
+        match v with
+        | VClosure (lam, r) -> ((EInt 1), r', k')
+        | VInt n' ->
+            match k' with
+            | KBinApp1 (op, e2, r, k) -> (e2, r, KBinApp2(op, VInt n', r, k))
+            | KBinApp2 (op, VInt n, r, k) -> 
+                let opFn op = 
+                    match op with
+                    | Add -> (+)
+                    | Mul -> ( * )
+                    | Sub -> (-)
+                    | Div -> (/)
+                in
+                    (EReturn (VInt((opFn op) n n')), r, k)
+            | KBinApp2(op, _, _, _) -> invalid_arg "Trying to apply binary operator to something that isnt a VInt"
+            | KAppArg (e, r, k) -> (e, r, k)
+            | KAppFun (lam, r, k)-> (EAbs lam,r,k)
+            | _ -> let () = print_int n' in invalid_arg "trying to evaluate the empty kont"
 
 let isFinal (s0 : state) : bool = 
     match s0 with
-    |(EAbs _, env, Mt) = True
-    | _ = False
+    |(_, env, Empty) -> true
+    | _ -> false
 
-let inject (exp : expr) : state = 
-    let r0 : env = fun x -> error ( "no binding for " ++ x )
+let rec terminal (s0 : state) : state =
+    if (isFinal s0) then s0 else terminal (step s0)
 
 
+let inject (exp: expr) : state = let (r : env) = [] in (exp, r, Empty);;
+
+
+(*
 
 let rec eval ( exp : expr) : int =  
-    print_endline "evaluating expression" exp
     match exp with
     | EInt n -> n
-    | EBin op e1 e2 -> 
+    | EBin (op, e1, e2) -> 
         let opFn = 
-            | Add = (+)
-            | Mul = ( * )
-            | Sub = (-)
-            | Div = (/)
+            match op with
+            | Add -> (+)
+            | Mul -> ( * )
+            | Sub -> (-)
+            | Div -> (/)
         in
             (opFn op) (eval e1) (eval e2)
-    | EApp e1 e2 -> (eval e1) (eval e2)
-    | EVar v1 
+    | EApp (e1, e2) -> (eval e1) (eval e2)
+    | EVar v1 -> 0
+*) 
+
+terminal (inject (EBinOp (Add, EInt 2, EInt 3)))
+
