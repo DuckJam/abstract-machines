@@ -23,6 +23,19 @@ type state = (expr * env * kont)
 (* domain of values / dentorable values , 
 closure is lambda term paired with environment that defines the values of its free variables*)
 
+let print_state ppf (s :state) = 
+    match s with
+    | (EVar x , _, _) -> Format.fprintf ppf "Evar of \n"
+    | (EApp _, _, _) -> Format.fprintf ppf "EApp of\n"
+    | (EAbs _, _, KAppArg _) -> Format.fprintf ppf "EAbs of arg\n"
+    | (EAbs _, _, KAppFun _) -> Format.fprintf ppf "EAbs of fun\n"
+    | (EAbs _, _, _) -> Format.fprintf ppf "EAbs of lam\n"
+    | (EInt n, _, _ ) -> Format.fprintf ppf "EInt of\n"
+    | (EBinOp _,_,_) -> Format.fprintf ppf "EBinOp of\n"
+    | (EReturn _,_,_) -> Format.fprintf ppf "EReturn of\n"
+
+
+
 let unwrapClosure v : lambda = 
     match v with
     | VClosure (lam, r) -> lam
@@ -40,8 +53,9 @@ let step (s: state) : state =
     | (EInt n, r, k ) -> (EReturn (VInt n), r, k)
     | (EBinOp (op, e1, e2), r, k ) -> (e1, r, KBinApp1 (op, e2, r, k))
     | (EReturn v, r', k') ->
+        let () = print_endline "returning value" in
         match v with
-        | VClosure (lam, r) -> ((EInt 1), r', k')
+        | VClosure (lam, r) -> ((EInt 5), r', k')
         | VInt n' ->
             match k' with
             | KBinApp1 (op, e2, r, k) -> (e2, r, KBinApp2(op, VInt n', r, k))
@@ -61,14 +75,16 @@ let step (s: state) : state =
 
 let isFinal (s0 : state) : bool = 
     match s0 with
-    |(_, env, Empty) -> true
+    |(EReturn(VInt n), env, Empty) -> let () = print_int n in true
     | _ -> false
 
 let rec terminal (s0 : state) : state =
-    if (isFinal s0) then s0 else terminal (step s0)
+    if (isFinal s0) 
+    then let () = print_state Format.std_formatter s0 in s0
+    else let () = print_state Format.std_formatter s0 in terminal (step s0)
 
 
-let inject (exp: expr) : state = let (r : env) = [] in (exp, r, Empty);;
+let inject (exp: expr) : state = let (r : env) = [] in (exp, r, Empty)
 
 
 (*
@@ -89,5 +105,4 @@ let rec eval ( exp : expr) : int =
     | EVar v1 -> 0
 *) 
 
-terminal (inject (EBinOp (Add, EInt 2, EInt 3)))
 
