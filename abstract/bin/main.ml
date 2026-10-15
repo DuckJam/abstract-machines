@@ -9,6 +9,6 @@ let binop = EBinOp( Mul, EVar "x", EInt 9) in(
   
 
 (*Cek.terminal (Cek.inject (EBinOp (Add, EInt 2, EInt 3)))*)
-
+let () = print_endline "\n"
 
 (*Cek.terminal (Cek.inject (EBinOp (Add, EInt 2, EInt 3)))*)
