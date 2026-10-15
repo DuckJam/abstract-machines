@@ -1,8 +1,14 @@
 
 (*Cek.eval EInt 2 *)
+let open Cek in 
+let binop = EBinOp( Mul, EVar "x", EInt 9) in(
+  let abs = EAbs( "x", binop) in (
+    terminal (inject (EApp (abs, EInt 5)))
+  )
+)
+  
 
-let binop = Cek.EBinOp( Add, EVar "x", EInt 3) in
-  let abs = Cek.EAbs( "x", binop) in
-    Cek.terminal (Cek.inject (EApp (abs, EInt 2)))
 (*Cek.terminal (Cek.inject (EBinOp (Add, EInt 2, EInt 3)))*)
 let () = print_endline "Hello, World!"
+
+(*Cek.terminal (Cek.inject (EBinOp (Add, EInt 2, EInt 3)))*)
