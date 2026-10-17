@@ -1,41 +1,6 @@
-type op = Add | Mul | Sub | Div
-type var = string
-
-type expr = EVar of var 
-        | EAbs of lambda
-        | EApp of (expr * expr)
-        | EInt of int 
-        | EBinOp of (op * expr * expr)
-        | EReturn of value
-and lambda = (var * expr)
-and value = VClosure of (lambda * env)
-        | VInt of int
-(* domain of values / dentorable values , 
-closure is lambda term paired with environment that defines the values of its free variables*)
-
-and env = (var * value) list
-(*list.assoc key alist (kxV list _> k ->V)*)
-and kont = Empty 
-        | KAppArg of (expr * env * kont)
-        | KAppFun of (lambda * env * kont)
-        | KBinApp1 of (op * expr * env * kont)
-        | KBinApp2 of (op * value * env * kont)
-        | KReturn of (value * expr * env * kont)
-
+with open Expression in
 type state = (expr * env * kont)
 
-let print_var (v:var) :string = v
-
-let print_state ppf (s :state) = 
-    match s with
-    | (EVar x , _, _) -> Format.fprintf ppf "Evar of %s \n" x
-    | (EApp _, _, _) -> Format.fprintf ppf "EApp of\n"
-    | (EAbs _, _, KAppArg _) -> Format.fprintf ppf "EAbs of arg\n"
-    | (EAbs _, _, KAppFun _) -> Format.fprintf ppf "EAbs of fun\n"
-    | (EAbs _, _, _) -> Format.fprintf ppf "EAbs of lam\n"
-    | (EInt n, _, _ ) -> Format.fprintf ppf "EInt of %d \n" n
-    | (EBinOp _,_,_) -> Format.fprintf ppf "EBinOp of\n"
-    | (EReturn _,_,_) -> Format.fprintf ppf "EReturn of\n"
 
 
 let step (s: state) : state = 
@@ -87,22 +52,5 @@ let rec terminal (s0 : state) : state =
 let inject (exp: expr) : state = let (r : env) = [] in (exp, r, Empty)
 
 
-(*
-
-let rec eval ( exp : expr) : int =  
-    match exp with
-    | EInt n -> n
-    | EBin (op, e1, e2) -> 
-        let opFn = 
-            match op with
-            | Add -> (+)
-            | Mul -> ( * )
-            | Sub -> (-)
-            | Div -> (/)
-        in
-            (opFn op) (eval e1) (eval e2)
-    | EApp (e1, e2) -> (eval e1) (eval e2)
-    | EVar v1 -> 0
-*) 
 
 
