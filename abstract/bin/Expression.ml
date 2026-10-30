@@ -1,5 +1,6 @@
 type op = Add | Mul | Sub | Div | Eq
 type var = string
+type addr = int
 
 type expr = 
   EVar of var 
@@ -18,18 +19,35 @@ and value =
   | VBool of bool
 (* domain of values / dentorable values , 
 closure is lambda term paired with environment that defines the values of its free variables*)
+and env = 
+  DirectEnv of (var * value) list
+  | AddrEnv of (var * addr) list
+(* store env = (var * addr) list *)
 
-and env = (var * value) list
 (*list.assoc key alist (kxV list _> k ->V)*)
-and kont = Empty 
+type kont = Empty 
   | KAppArg of (expr * env * kont)
   | KAppFun of (lambda * env * kont)
   | KBinApp1 of (op * expr * env * kont)
   | KBinApp2 of (op * value * env * kont)
   | KIf of (expr * expr * env * kont)
   | KReturn of (value * expr * env * kont)
-;;
 
+
+
+type storable = 
+  SValue of value 
+  | SExpr of expr
+  | SOp of op
+  | SKont of kont
+type stack = storable list
+
+type thunk = 
+  TDelayed of (expr * env)
+  | TComputed of (lambda * env)
+
+
+type store = (addr * storable) list
 
 let str_op (o: op): string =
   match o with
@@ -63,30 +81,26 @@ let print_expr ppf (e: expr) =
 
 
 
-let eval v1 k : value =  
-  match k with
-  | KBinApp2(op, v2, e, k) -> (
-      match v1, v2 with 
-      | VInt n1, VInt n2 -> (
-        match op with 
-        | Eq -> VBool(n1 == n2)
-        | _ -> 
-        let opFn op = 
-          match op with
-            | Add -> (+)
-            | Mul -> ( * )
-            | Sub -> (-)
-            | Div -> (/)
-            | _ -> invalid_arg "applying incorrect operator to two ints"
-        in VInt((opFn op) n1 n2)
-      )    
-      | VBool b1, VBool b2 -> (
-        match op with
-          | Eq -> VBool(b1 == b2)
-          | _ -> invalid_arg "trying to do anything other than eq with two bools"
-      )
-    | _ , _-> invalid_arg "mismatch of types in binop"
+let evalBinOp op v1 v2 : value =  
+  match v1, v2 with 
+  | VInt n1, VInt n2 -> (
+    match op with 
+    | Eq -> VBool(n1 == n2)
+    | _ -> 
+    let opFn op = 
+      match op with
+        | Add -> (+)
+        | Mul -> ( * )
+        | Sub -> (-)
+        | Div -> (/)
+        | _ -> invalid_arg "applying incorrect operator to two ints"
+    in VInt((opFn op) n1 n2)
+  )    
+  | VBool b1, VBool b2 -> (
+    match op with
+      | Eq -> VBool(b1 == b2)
+      | _ -> invalid_arg "trying to do anything other than eq with two bools"
   )
-  | _ -> invalid_arg "trying to evaluate invalid kont"
+  | _ , _-> invalid_arg "mismatch of types in binop"
 ;;
 
