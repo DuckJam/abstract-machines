@@ -3,7 +3,7 @@ type var = string
 type addr = int
 
 type expr = 
-  EVar of var 
+    EVar of var 
   | EAbs of lambda
   | EApp of (expr * expr)
   | EInt of int 
@@ -14,7 +14,7 @@ type expr =
 
 and lambda = (var * expr)
 and value = 
-  VClosure of (lambda * env)
+    VClosure of (lambda * env)
   | VInt of int
   | VBool of bool
 (* domain of values / dentorable values , 
@@ -23,6 +23,7 @@ and env =
   DirectEnv of (var * value) list
   | AddrEnv of (var * addr) list
 (* store env = (var * addr) list *)
+
 
 (*list.assoc key alist (kxV list _> k ->V)*)
 type kont = Empty 
@@ -33,21 +34,26 @@ type kont = Empty
   | KIf of (expr * expr * env * kont)
   | KReturn of (value * expr * env * kont)
 
-
+type thunk = 
+    TDelayed of (expr * env)
+  | TComputed of (value * env)
 
 type storable = 
-  SValue of value 
+    SValue of value 
   | SExpr of expr
   | SOp of op
-  | SKont of kont
+  | SThunk of thunk
+
 type stack = storable list
 
-type thunk = 
-  TDelayed of (expr * env)
-  | TComputed of (lambda * env)
-
-
 type store = (addr * storable) list
+
+type kframe = 
+  | KArg of addr
+  | KOpLeft of op * expr * env
+  | KOpRight of op * value
+
+type kontstack = kframe list
 
 let str_op (o: op): string =
   match o with
