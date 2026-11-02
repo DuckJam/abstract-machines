@@ -15,15 +15,15 @@ let open Expression in
     in
     EIf(expr_cond, expr_cond,expr)
   in Cek.terminal (Cek.inject expr_If);;
-  
-(*let open Expression in
+
+let open Expression in
   let expr = EApp (
       EAbs("x",
         EBinOp(Mul, EVar "x", EInt 9)
       ), 
       (EInt 5)
-    ) in Cesk.terminal (Cesk.inject expr);;
-*)
+    ) in LK.terminal (LK.inject expr);;
+
 (*let open Expression in
   let expr = EApp (EAbs("x", EBinOp(Mul, EVar "x", EInt 9)), (EInt 5))
   and expr_cond = EBinOp(Eq, EInt 3, EInt 3)
