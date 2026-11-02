@@ -20,7 +20,7 @@ let step (s: state) : state =
     | VClosure ((var, e), r) -> (e, r, k')
     | _ -> match k' with
       | KBinApp1 (op, e2, r, k) -> (e2, r, KBinApp2(op, v, r, k))
-      | KBinApp2 (op, v2, r, k) -> (EReturn(Expression.evalBinOp op v v2), r, k)
+      | KBinApp2 (op, v1, r, k) -> (EReturn(Expression.evalBinOp op v1 v), r, k)
       | KAppArg (e, r, k) -> (e, r, k)
       | KAppFun ((var, e), DirectEnv r, k)-> (e,DirectEnv ([(var, v)]@r) ,k)
       | KIf(eThen, eElse, r, k) -> (
