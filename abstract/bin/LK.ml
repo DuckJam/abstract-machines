@@ -43,7 +43,7 @@ let step (s: state): state =
       | _ -> invalid_arg ""
     )
   )
-  | (_, DirectEnv _, _, _) -> invalid_arg "incorrect Env for krivine"
+  | (_, ValEnv _, _, _) -> invalid_arg "incorrect Env for krivine"
   | _ -> invalid_arg "expression not implemented for krivine"
 
 
