@@ -19,8 +19,9 @@ and value =
   | VBool of bool
 (* domain of values / dentorable values , 
 closure is lambda term paired with environment that defines the values of its free variables*)
+
 and env = 
-  DirectEnv of (var * value) list
+    ValEnv of (var * value) list
   | AddrEnv of (var * addr) list
 (* store env = (var * addr) list *)
 
@@ -32,7 +33,6 @@ type kont = Empty
   | KBinApp1 of (op * expr * env * kont)
   | KBinApp2 of (op * value * env * kont)
   | KIf of (expr * expr * env * kont)
-  | KReturn of (value * expr * env * kont)
 
 type thunk = 
     TDelayed of (expr * env)
@@ -41,17 +41,25 @@ type thunk =
 type storable = 
     SValue of value 
   | SExpr of expr
-  | SOp of op
   | SThunk of thunk
 
-type stack = storable list
+type stack = value list
 
 type store = (addr * storable) list
+
+type ctrl = 
+    CExpr of expr
+  | CApp
+  | COp of op
+
+type dump = (stack * env * ctrl list) list 
+
 
 type kframe = 
   | KArg of addr
   | KOpLeft of op * expr * env
   | KOpRight of op * value
+  | KIf of expr * expr
 
 type kontstack = kframe list
 
@@ -85,6 +93,12 @@ let print_expr ppf (e: expr) =
   Format.fprintf ppf "%s \n" (str_expr e)
 ;;
 
+let rec str_stack (s:stack) = 
+  match s with
+  | v::vs -> str_value v ^","^ str_stack vs
+  | [] -> ""
+
+let print_stack ppf (s: stack) = Format.fprintf ppf "%s \n" (str_stack s) 
 
 
 let evalBinOp op v1 v2 : value =  
