@@ -3,13 +3,14 @@ type state = (Expression.expr * Expression.env * Expression.kont)
 let step (s: state) : state = 
   match s with
   | (_, AddrEnv _, _) -> invalid_arg "invalid environment for CEK machine"
-  | (EVar x , DirectEnv r, k) -> 
+  | (EVar x , ValEnv r, k) -> 
     begin try
-    let v = List.assoc x r in (EReturn v, DirectEnv r, k)
+    let v = List.assoc x r in (EReturn v, ValEnv r, k)
     with Not_found -> invalid_arg "unbound variable" end
   | (EApp (e1, e2), r , k ) -> (e1, r, KAppArg (e2, r, k))
   | (EAbs lam, r, KAppArg (e, r', k )) -> (e, r', KAppFun (lam, r, k))
-  | (EAbs lam, DirectEnv r, KAppFun ((var, e), DirectEnv r', k )) -> (e, DirectEnv ([(var,  Expression.VClosure(lam, DirectEnv r))] @ r') , k)
+  | (EAbs lam, ValEnv r, KAppFun ((var, e), ValEnv r', k )) -> 
+    (e, ValEnv ((var,  (Expression.VClosure(lam, ValEnv r))) :: r') , k)
   | (EAbs lam, r, k) -> (EReturn(VClosure(lam, r)), r, k) 
   | (EInt n, r, k ) -> (EReturn (VInt n), r, k)
   | (EBool b, r, k) -> (EReturn (VBool b), r, k)
@@ -22,7 +23,7 @@ let step (s: state) : state =
       | KBinApp1 (op, e2, r, k) -> (e2, r, KBinApp2(op, v, r, k))
       | KBinApp2 (op, v1, r, k) -> (EReturn(Expression.evalBinOp op v1 v), r, k)
       | KAppArg (e, r, k) -> (e, r, k)
-      | KAppFun ((var, e), DirectEnv r, k)-> (e,DirectEnv ([(var, v)]@r) ,k)
+      | KAppFun ((var, e), ValEnv r, k)-> (e, ValEnv ((var, v)::r) ,k)
       | KIf(eThen, eElse, r, k) -> (
         match v with VBool b -> 
           if b
@@ -45,4 +46,5 @@ let rec terminal (s : state) : state =
     else terminal (step s)
 
 
-let inject (exp: Expression.expr) : state = let (r : Expression.env) = DirectEnv [] in (exp, r, Empty)
+let inject (exp: Expression.expr) : state = 
+  let (r : Expression.env) = ValEnv [] in (exp, r, Empty)
