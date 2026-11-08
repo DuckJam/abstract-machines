@@ -38,6 +38,8 @@ let rec terminal (sigma : state) : state =
     let () = 
         match c with 
         | (CExpr exp)::_->  Expression.print_expr Format.std_formatter exp
+        | (CApp)::_ -> Format.fprintf Format.std_formatter "Applying \n"
+        | (COp _)::_ -> Format.fprintf Format.std_formatter "Operating \n"
         | _ -> ()
     and () = Expression.print_stack Format.std_formatter s
   in
