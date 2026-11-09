@@ -39,11 +39,14 @@ let isFinal (s : state) : bool =
     |(EReturn _, _, Empty) -> true
     | _ -> false
 
-let rec terminal (s : state) : state =
-    let () = let (e, r, k) = s in Expression.print_expr Format.std_formatter e in
-    if (isFinal s) 
-    then s
-    else terminal (step s)
+let rec terminal (sigma : state) : state =
+  let (e, r, k) = sigma in 
+    let () = Expression.print_expr Format.std_formatter e
+    and () = Expression.print_env Format.std_formatter r
+  in 
+    if (isFinal sigma) 
+    then sigma
+    else terminal (step sigma)
 
 
 let inject (exp: Expression.expr) : state = 

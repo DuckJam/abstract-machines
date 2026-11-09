@@ -62,7 +62,11 @@ let isFinal (s : state) : bool =
     | _ -> false
 
 let rec terminal (sigma : state) : state =
-    let () = let (e, _, _, _) = sigma in Expression.print_expr Format.std_formatter e in
+  let (c, e, s, _) = sigma in
+    let () = Expression.print_expr Format.std_formatter c
+    and () = Expression.print_env Format.std_formatter e
+    and () = Expression.print_store Format.std_formatter s
+  in
     if (isFinal sigma) 
     then sigma
     else terminal (step sigma)
