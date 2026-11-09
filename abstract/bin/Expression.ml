@@ -57,10 +57,11 @@ type dump = (stack * env * ctrl list) list
 
 
 type kframe = 
+  | KFun of addr
   | KArg of addr
   | KOpLeft of op * expr * env
   | KOpRight of op * value
-  | KIf of expr * expr
+  | KIf of expr * expr * env
 
 type kontstack = kframe list
 
@@ -118,6 +119,32 @@ let rec prnt_ctrl (c: ctrl list): string =
   | [] -> "]"
 
 let print_ctrl ppf (c:ctrl list) = Format.fprintf ppf "C: [%s \n" (prnt_ctrl c)
+
+let rec str_env (e: env) : string = 
+  match e with
+  | ValEnv ((var, v) :: xs) -> var^" = "^(str_value v)^", "^(str_env  (ValEnv xs))
+  | ValEnv [] -> "]"
+  | AddrEnv ((var, addr)::xs) -> var^(Format.sprintf " -> %d" addr)^", "^(str_env  (AddrEnv xs))
+  | AddrEnv [] -> "]"
+
+let print_env ppf (e:env) = Format.fprintf ppf "Env: [%s \n" (str_env e)
+
+let str_storable (s: storable) : string = 
+  match s with
+  | SValue v-> str_value v
+  | SExpr e -> "Expr"^(str_expr e)
+  | SThunk t ->
+    match t with
+    | TComputed (v, _)-> "CThunk "^(str_value v)
+    | TDelayed (e, _)-> "DThunk "^(str_expr e)
+
+
+let rec str_store (s: store) : string = 
+  match s with
+  | (addr, v)::xs -> (Format.sprintf "%d ->" addr)^(str_storable v)^", "^(str_store xs)
+  | [] -> "]"
+
+let print_store ppf (s:store) = Format.fprintf ppf "Str: [%s \n" (str_store s)
 
 
 let evalBinOp op v1 v2 : value =  
