@@ -32,6 +32,8 @@ let step (s: state): state =
 
   | (EBinOp(op, e1, e2), r, p, k) -> (e1, r, p, Expression.KOpLeft(op, e2, r) :: k)
 
+  | (EIf(eIf, eThen, eElse), r, p, k) -> (eIf, r, p, KIf(eThen, eElse)::k)
+
   | (EReturn v, r, p, k :: ktail) -> (
 
     match v with
@@ -40,7 +42,12 @@ let step (s: state): state =
       match k with
       | KOpLeft (op, e2, env) -> (e2, env, p, Expression.KOpRight(op, v) :: ktail)
       | KOpRight (op, v1) -> (EReturn(Expression.evalBinOp op v1 v), r, p, ktail)
-      | _ -> invalid_arg ""
+      | KIf (eThen, eElse) -> (
+        match v with
+        | VBool b -> if b then (eThen, r, p, ktail) else (eElse, r, p, ktail)
+        | _ -> invalid_arg "if statement evaluated to something that isnt a bool" 
+      )
+      | _ -> invalid_arg "trying to evaluate empty kont"
     )
   )
   | (_, ValEnv _, _, _) -> invalid_arg "incorrect Env for krivine"
