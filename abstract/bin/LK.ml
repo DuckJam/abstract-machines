@@ -3,48 +3,52 @@ type state = (Expression.expr * Expression.env * Expression.store * Expression.k
 let next_addr (p : Expression.store) : Expression.addr = 
   if List.is_empty p then 0 else List.length p + 1
 
-let step (s: state): state = 
-  match s with
-  | (EVar x, AddrEnv r, p, k) ->    
+let step (sigma: state): state = 
+  match sigma with
+  | (EVar x, AddrEnv r, s, k) ->    
     begin try
     let a = List.assoc x r in
-    let v = List.assoc a p in
+    let v = List.assoc a s in
       match v with
       | SThunk t -> (
         match t with
-          | TComputed (v, r')-> (EReturn v, r', p, k)
-          | TDelayed (e, r') -> (e, r', p, k)
+          | TComputed (v, r')-> (EReturn v, r', s, k)
+          | TDelayed (e, r') -> (e, r', s, KFun a :: k)
         )
       | _ -> invalid_arg "found storable other than thunk"
     with Not_found -> invalid_arg "unbound variable" end
 
-  | (EInt n, r, p, k) -> (EReturn (VInt n), r, p, k)
-  | (EBool b, r, p, k) -> (EReturn (VBool b), r, p, k)
+  | (EInt n, r, s, k) -> (EReturn (VInt n), r, s, k)
+  | (EBool b, r, s, k) -> (EReturn (VBool b), r, s, k)
 
-  | (EApp (e1, e2), r, p, k) -> 
-    let a = next_addr p in
-    let p' = (a, Expression.SThunk (Expression.TDelayed(e2, r)))::p in
-    (e1, r, p', Expression.KArg a :: k)
+  | (EApp (eFun, eArg), r, s, k) -> 
+    let a = next_addr s in
+    let s' = (a, Expression.SThunk (Expression.TDelayed(eArg, r)))::s in
+    (eFun, r, s', Expression.KArg a :: k)
 
-  | (EAbs (v, e), AddrEnv r, p, KArg a :: k) -> 
+  | (EAbs (v, e), AddrEnv r, s, KArg a :: k) -> 
     let r' = (v, a) :: r in
-    (e, AddrEnv r', p, k)
+    (e, AddrEnv r', s, k)
 
-  | (EBinOp(op, e1, e2), r, p, k) -> (e1, r, p, Expression.KOpLeft(op, e2, r) :: k)
+  | (EBinOp(op, e1, e2), r, s, k) -> (e1, r, s, Expression.KOpLeft(op, e2, r) :: k)
 
-  | (EIf(eIf, eThen, eElse), r, p, k) -> (eIf, r, p, KIf(eThen, eElse)::k)
+  | (EIf(eIf, eThen, eElse), r, s, k) -> (eIf, r, s, KIf(eThen, eElse, r)::k)
 
-  | (EReturn v, r, p, k :: ktail) -> (
+  | (EReturn v, r, s, KFun addr :: k) -> 
+    begin try
+      let s' = (addr, Expression.SThunk (TComputed(v, r))) :: (List.remove_assoc addr s) in (EReturn v, r, s', k)
+    with Not_found -> invalid_arg "address not found" end
 
+  | (EReturn v, r, s, k :: ktail) -> (
     match v with
-    | VClosure ((var, e), r') -> (e, r', p, k::ktail)
+    | VClosure ((var, e), r') -> (e, r', s, k::ktail)
     | _ -> (
       match k with
-      | KOpLeft (op, e2, env) -> (e2, env, p, Expression.KOpRight(op, v) :: ktail)
-      | KOpRight (op, v1) -> (EReturn(Expression.evalBinOp op v1 v), r, p, ktail)
-      | KIf (eThen, eElse) -> (
+      | KOpLeft (op, e2, env) -> (e2, env, s, Expression.KOpRight(op, v) :: ktail)
+      | KOpRight (op, v1) -> (EReturn(Expression.evalBinOp op v1 v), r, s, ktail)
+      | KIf (eThen, eElse, r') -> (
         match v with
-        | VBool b -> if b then (eThen, r, p, ktail) else (eElse, r, p, ktail)
+        | VBool b -> if b then (eThen, r', s, ktail) else (eElse, r', s, ktail)
         | _ -> invalid_arg "if statement evaluated to something that isnt a bool" 
       )
       | _ -> invalid_arg "trying to evaluate empty kont"
@@ -59,11 +63,15 @@ let isFinal (s : state) : bool =
   |(EReturn _, _, _, []) -> true
   | _ -> false
 
-let rec terminal (s : state) : state =
-  let () = let (e, _, _, _) = s in Expression.print_expr Format.std_formatter e in
-  if (isFinal s) 
-  then s
-  else terminal (step s)
+let rec terminal (sigma : state) : state =
+  let (e, r, s, _) = sigma in
+    let () =  Expression.print_expr Format.std_formatter e 
+    and () =  Expression.print_env Format.std_formatter r
+    and () = Expression.print_store Format.std_formatter s
+  in
+    if (isFinal sigma) 
+    then sigma
+    else terminal (step sigma)
 
 
 let inject (exp: Expression.expr) : state = 
