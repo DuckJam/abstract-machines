@@ -6,6 +6,7 @@ let step (sigma: state) : state =
   | (v::[], e', [], (s,e,c)::d) -> (v::s, e, c, d)
 
   | (s, e, (CExpr (EInt n))::c, d) -> (VInt n :: s, e, c, d)
+  | (s, e, (CExpr (EBool b))::c, d) -> (VBool b :: s, e, c, d)
 
   | (s, ValEnv e, (CExpr (EVar x))::c, d) -> 
     begin try
@@ -14,16 +15,24 @@ let step (sigma: state) : state =
 
   | (s, e, (CExpr (EAbs lam))::c, d) -> (VClosure (lam, e)::s, e, c, d)
 
-  | (s, e, (CExpr (EApp (e1, e2)))::c, d) -> 
-    (s, e, (CExpr e2):: (CExpr e1):: CApp :: c, d)
+  | (s, e, (CExpr (EApp (eFun, eArg)))::c, d) -> 
+    (s, e, (CExpr eArg):: (CExpr eFun):: CApp :: c, d)
+  
+  | (VClosure((var, exp), e'):: v':: s, ValEnv e, CApp::c, d) ->
+    ([], ValEnv ((var, v')::e), (CExpr exp)::[], (s, ValEnv e, c):: d)
 
   | (s, e, (CExpr (EBinOp (op, e1, e2)))::c, d) -> 
     (s, e, (CExpr e2):: (CExpr e1):: (COp op):: c, d)
 
   | (v2 :: v1:: s, e, (COp op):: c, d) -> ((Expression.evalBinOp op v1 v2)::s, e, c, d)
 
-  | (VClosure((var, exp), e'):: v':: s, ValEnv e, CApp::c, d) ->
-    ([], ValEnv ((var, v')::e), (CExpr exp)::[], (s, ValEnv e, c):: d)
+  | (s, e, (CExpr (EIf (eIf, eThen, eElse)))::c, d) -> 
+    (s, e, (CExpr eIf)::CIf ::  (CExpr eThen):: (CExpr eElse) ::c, d)
+
+  | (VBool b::s, e, CIf:: eThen:: eElse::c, d) ->
+    if b 
+      then (s, e, eThen::c, d)
+      else (s, e, eElse::c, d)
   
   | _ -> failwith "invalid state for SECD machine"
 
@@ -35,12 +44,7 @@ let isFinal (s : state) : bool =
 
 let rec terminal (sigma : state) : state =
   let (s, _, c, _) = sigma in 
-    let () = 
-        match c with 
-        | (CExpr exp)::_->  Expression.print_expr Format.std_formatter exp
-        | (CApp)::_ -> Format.fprintf Format.std_formatter "Applying \n"
-        | (COp _)::_ -> Format.fprintf Format.std_formatter "Operating \n"
-        | _ -> ()
+    let () = Expression.print_ctrl Format.std_formatter c
     and () = Expression.print_stack Format.std_formatter s
   in
     if (isFinal sigma) 

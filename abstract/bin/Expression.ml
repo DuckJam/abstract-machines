@@ -1,4 +1,4 @@
-type op = Add | Mul | Sub | Div | Eq
+type op = Add | Mul | Sub | Div | Eq | Lt | Gt | LEq | GEq
 type var = string
 type addr = int
 
@@ -51,6 +51,7 @@ type ctrl =
     CExpr of expr
   | CApp
   | COp of op
+  | CIf
 
 type dump = (stack * env * ctrl list) list 
 
@@ -70,10 +71,14 @@ let str_op (o: op): string =
   | Sub -> "-"
   | Div -> "/"
   | Eq -> "=="
+  | Lt -> "<"
+  | Gt -> ">"
+  | LEq -> "<="
+  | GEq -> ">="
 
 let str_value (v: value): string  =
   match v with
-  | VClosure _-> "closure"
+  | VClosure ((v, e), _)-> "closure lam "^v
   | VInt n -> Format.sprintf "%d" n
   | VBool b -> Format.sprintf "%b" b
 
@@ -95,10 +100,24 @@ let print_expr ppf (e: expr) =
 
 let rec str_stack (s:stack) = 
   match s with
-  | v::vs -> str_value v ^","^ str_stack vs
-  | [] -> ""
+  | v::vs -> str_value v ^", "^ str_stack vs
+  | [] -> "]"
 
-let print_stack ppf (s: stack) = Format.fprintf ppf "%s \n" (str_stack s) 
+let print_stack ppf (s: stack) = Format.fprintf ppf "S: [%s \n" (str_stack s) 
+
+let str_ctrl (c:ctrl) : string = 
+  match c with 
+  | CExpr exp -> str_expr exp
+  | CApp -> "Apply"
+  | COp op -> str_op op
+  | CIf -> "If"
+
+let rec prnt_ctrl (c: ctrl list): string =
+  match c with
+  | c::cs -> str_ctrl c ^", "^ prnt_ctrl cs
+  | [] -> "]"
+
+let print_ctrl ppf (c:ctrl list) = Format.fprintf ppf "C: [%s \n" (prnt_ctrl c)
 
 
 let evalBinOp op v1 v2 : value =  
@@ -106,6 +125,10 @@ let evalBinOp op v1 v2 : value =
   | VInt n1, VInt n2 -> (
     match op with 
     | Eq -> VBool(n1 == n2)
+    | Lt -> VBool(n1 < n2)
+    | Gt -> VBool(n1 > n2)
+    | LEq -> VBool(n1 <= n2)
+    | GEq -> VBool(n1 >= n2)
     | _ -> 
     let opFn op = 
       match op with
