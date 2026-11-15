@@ -1,4 +1,5 @@
-type state = (Expression.expr * Expression.env * Expression.kont)
+open Expression
+type state = (expr * env * kont)
 
 let step (s: state) : state = 
   match s with
