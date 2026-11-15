@@ -9,20 +9,23 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: abstract
     steps:
       - uses: actions/checkout@v4
       - uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: 5.2
       - run: opam install -y dune js_of_ocaml js_of_ocaml-ppx
-      - run: opam exec -- dune build web/main.bc.js --profile release
+      - run: opam exec -- dune build abstract/web/main.bc.js --profile release
       - run: |
           mkdir site
           cp web/index.html site/
           cp _build/default/web/main.bc.js site/
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: abstract/site
   deploy:
     needs: build
     runs-on: ubuntu-latest
