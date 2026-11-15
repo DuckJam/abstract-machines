@@ -4,13 +4,18 @@ open CEK
 
 let history : state list ref = ref []
 
+let expr_If = 
+  let expr = EApp (EAbs("x", EBinOp(Mul, EVar "x", EInt 9)), (EInt 5))
+  and expr_cond = EBinOp(LEq, EInt 3, EInt 5) in
+  EIf(expr_cond, expr_cond,expr)
+
 let render st = 
   let el = Dom_html.getElementById "state" in
   el##.textContent := Js.some (Js.string (string_state st))
 
 let () = 
   Dom_html.window##.onload := Dom_html.handler (fun _ ->
-    let init = initial_state example_expr in
+    let init = inject expr_If in
     history := [init];
     render init;
     let btn id f = 
