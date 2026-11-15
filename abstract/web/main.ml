@@ -6,7 +6,7 @@ let history : state list ref = ref []
 
 let expr_If = 
   let expr = EApp (EAbs("x", EBinOp(Mul, EVar "x", EInt 9)), (EInt 5))
-  and expr_cond = EBinOp(LEq, EInt 3, EInt 5) in
+  and expr_cond = EBinOp(Gt, EInt 3, EInt 5) in
   EIf(expr_cond, expr_cond,expr)
 
 let render st = 
