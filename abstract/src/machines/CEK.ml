@@ -41,7 +41,7 @@ let isFinal (s : state) : bool =
     | _ -> false
 
 let string_state (sigma : state) : string = 
-  let (e, r, k) = sigma in (Expression.str_expr e)^"\n"^(Expression.str_env r)^"\n"^(Expression.str_kont k)
+  let (e, r, k) = sigma in "C: "^(Expression.str_expr e)^"\nEnv: ["^(Expression.str_env r)^"\nKont: ["^(Expression.str_kont k)
 
 let print_state (sigma : state) = 
   let (e, r, k) = sigma in
