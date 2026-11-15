@@ -1,4 +1,4 @@
 (executable
  (public_name abstract)
  (name main)
- (libraries abstract))
+ (libraries abstract expression machines))
