@@ -147,6 +147,17 @@ let rec str_store (s: store) : string =
 let print_store ppf (s:store) = Format.fprintf ppf "Str: [%s \n" (str_store s)
 
 
+let rec str_kont (k: kont) : string = 
+  match k with
+  | Empty -> "]"
+  | KAppArg(e, _, k') -> "KArg "^(str_expr e)^", "^(str_kont k')
+  | KAppFun((v,e), _, k') -> "KFun lam "^v^"."^(str_expr e)^", "^(str_kont k')
+  | KBinApp1 (op,  e, _, k') ->"KopL "^(str_op op)^(str_expr e)^", "^(str_kont k')
+  | KBinApp2 (op, v, _, k') -> "KopR "^(str_op op)^(str_value v)^", "^(str_kont k')
+  | KIf (eThen, eElse, _, k') -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)^", "^(str_kont k')
+
+let print_kont ppf (k:kont) = Format.fprintf ppf "K: [%s \n" (str_kont k)
+
 let evalBinOp op v1 v2 : value =  
   match v1, v2 with 
   | VInt n1, VInt n2 -> (

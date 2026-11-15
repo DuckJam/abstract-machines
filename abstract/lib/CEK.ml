@@ -39,10 +39,17 @@ let isFinal (s : state) : bool =
     |(EReturn _, _, Empty) -> true
     | _ -> false
 
-let rec terminal (sigma : state) : state =
-  let (e, r, k) = sigma in 
+let string_state (sigma : state) : string = 
+  let (e, r, k) = sigma in (Expression.str_expr e)^", "^(Expression.str_env r)^", "^(Expression.str_kont k)
+
+let print_state (sigma : state) : () = 
+  let (e, r, k) = sigma in
     let () = Expression.print_expr Format.std_formatter e
     and () = Expression.print_env Format.std_formatter r
+    and () = Expression.print_kont Format.std_formatter k
+
+let rec terminal (sigma : state) : state =
+  let () = print_state sigma
   in 
     if (isFinal sigma) 
     then sigma

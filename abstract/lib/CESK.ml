@@ -62,10 +62,11 @@ let isFinal (s : state) : bool =
     | _ -> false
 
 let rec terminal (sigma : state) : state =
-  let (c, e, s, _) = sigma in
+  let (c, e, s, k) = sigma in
     let () = Expression.print_expr Format.std_formatter c
     and () = Expression.print_env Format.std_formatter e
     and () = Expression.print_store Format.std_formatter s
+    and () = Expression.print_kont Format.std_formatter k
   in
     if (isFinal sigma) 
     then sigma
