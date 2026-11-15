@@ -1,6 +1,6 @@
 open Js_of_ocaml
 open Expression
-open CEK
+open Machines.CEK
 
 let history : state list ref = ref []
 

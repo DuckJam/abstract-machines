@@ -1,6 +1,5 @@
-((executable
+(executable
  (name main)
- (public_name )
  (modes js)
- (libraries abstract js_of_ocaml)
- (preprocess (pps js_of_ocaml-ppx))))
+ (libraries expression machines js_of_ocaml)
+ (preprocess (pps js_of_ocaml-ppx)))
