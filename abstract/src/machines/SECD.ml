@@ -25,7 +25,7 @@ let step (sigma: state) : state =
     ([], ValEnv ((var, v')::e), (CExpr exp)::[], (s, ValEnv e, c):: d)
 
   | (s, e, (CExpr (EBinOp (op, e1, e2)))::c, d) -> 
-    (s, e, (CExpr e2):: (CExpr e1):: (COp op):: c, d)
+    (s, e, (CExpr e1):: (CExpr e2):: (COp op):: c, d)
 
   | (v2 :: v1:: s, e, (COp op):: c, d) -> ((Expression.evalBinOp op v1 v2)::s, e, c, d)
 
