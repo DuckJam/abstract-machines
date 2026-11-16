@@ -61,7 +61,7 @@ let () =
   Dom_html.window##.onload := Dom_html.handler (fun _ ->
     let doc = Dom_html.document in
     let select = get_el "machine" Dom_html.CoerceTo.select in
-    let input = get_el "input" Dom_html.CoerceTo.select in
+    let input = get_el "input" Dom_html.CoerceTo.textarea in
     let set_text id s =
       (Dom_html.getElementById id)##.textContent := Js.some (Js.string s)
     in
