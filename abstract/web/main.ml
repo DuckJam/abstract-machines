@@ -55,7 +55,7 @@ let get_el id coerce =
     | Some e -> e
     | None -> failwith ("missing element #"^id)
 
-let default_text = "(fun x -> x + 1) 2"
+let default_text = "if 3 > 0 then (fun x -> x + 1) @ 2 else (fun x -> fun y -> y*x) @ 10 @ 3 "
 
 let () = 
   Dom_html.window##.onload := Dom_html.handler (fun _ ->

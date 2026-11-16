@@ -29,6 +29,7 @@ rule token = parse
   | "else" {ELSE}
   | '(' {LPAREN}
   | ')' {RPAREN}
+  | '@' {AT}
   | "true" {TRUE}
   | "false" {FALSE}
   | identifier as s {IDENT s}

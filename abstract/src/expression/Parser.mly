@@ -4,7 +4,7 @@
 
 %token <int> INT 
 %token <string> IDENT
-%token FUN ARROW PLUS MINUS STAR DIV LT GT GEQ LEQ EQ LPAREN RPAREN IF THEN ELSE TRUE FALSE EOF
+%token FUN ARROW PLUS MINUS STAR DIV LT GT GEQ LEQ EQ LPAREN RPAREN IF THEN ELSE TRUE FALSE AT EOF
 
 %nonassoc LT GT GEQ LEQ
 %left PLUS MINUS STAR DIV
@@ -19,7 +19,7 @@ expr:
   | FUN x = IDENT ARROW body = expr { EAbs (x, body)}
   | e = binop { e }
   | IF cond = expr THEN eThen = expr ELSE eElse = expr { EIf(cond, eThen, eElse) }
-  | f = expr a = atom { EApp (f, a)}
+  | f = expr AT a = atom { EApp (f, a)}
   | a = atom { a }
 
 binop: 
