@@ -17,15 +17,21 @@ jobs:
       - uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: 5.2
-      - run: opam install -y dune js_of_ocaml js_of_ocaml-ppx
-      - run: opam exec -- dune build web/main.bc.js --profile release
-      - run: |
-          mkdir site
-          cp web/index.html site/
-          cp _build/default/web/main.bc.js site/
+      - run: opam install -y dune menhir yojson js_of_ocaml js_of_ocaml-ppx
+        working-directory: abstract
+      - run: opam exec -- dune build api/api.bc.js --profile release
+        working-directory: abstract
+      - run: cp abstract/_build/default/api/api.bc.js ui/public/machines.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci && npx tsc -b && npx vite build
+        working-directory: ui
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: abstract/site
+          path: ui/dist
   deploy:
     needs: build
     runs-on: ubuntu-latest

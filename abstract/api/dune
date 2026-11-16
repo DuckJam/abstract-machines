@@ -1,0 +1,5 @@
+(executable
+ (name api)
+ (modes js)
+ (libraries expression machines yojson js_of_ocaml)
+ (preprocess (pps js_of_ocaml-ppx)))
