@@ -66,14 +66,14 @@ let is_final (s : state) : bool =
 
 let string_state (sigma : state) : string = 
   let (c, e, s, k) = sigma in 
-  "C: "^(str_expr c)^"\nEnv: [\n"^(str_env e)^"\nStack: [\n"^(str_store s)^"\nKont: [\n"^(str_kont k)
+  "C: "^(str_expr c)^"\n"^(print_env e)^"\n"^(print_store s)^"\n"^(print_kont k)
 
 let rec terminal (sigma : state) : state =
   let (c, e, s, k) = sigma in
-    let () = Expression.print_expr Format.std_formatter c
-    and () = Expression.print_env Format.std_formatter e
-    and () = Expression.print_store Format.std_formatter s
-    and () = Expression.print_kont Format.std_formatter k
+    let () = Format.fprintf Format.std_formatter "%s" (print_expr c)
+    and () = Format.fprintf Format.std_formatter "%s" (print_env e)
+    and () = Format.fprintf Format.std_formatter "%s" (print_store s)
+    and () = Format.fprintf Format.std_formatter "%s" (print_kont k)
   in
     if (is_final sigma) 
     then sigma
@@ -82,3 +82,7 @@ let rec terminal (sigma : state) : state =
 
 let inject (exp: Expression.expr) : state = 
   let (r : Expression.env) = AddrEnv[] in (exp, r, [], Empty)
+
+let view (sigma: state) : (string * string list) list  = 
+  let (c, e, s, k) = sigma in 
+    [("EXPR", [str_expr c]); ("VALENV", str_env e); ("STORE", str_store s);("KONT", str_kont k)]

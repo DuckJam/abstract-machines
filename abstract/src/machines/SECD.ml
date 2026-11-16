@@ -47,8 +47,8 @@ let is_final (s : state) : bool =
 
 let rec terminal (sigma : state) : state =
   let (s, _, c, _) = sigma in 
-    let () = Expression.print_ctrl Format.std_formatter c
-    and () = Expression.print_stack Format.std_formatter s
+    let () = Format.fprintf Format.std_formatter "%s" (print_ctrl c)
+    and () = Format.fprintf Format.std_formatter "%s" (print_stack s)
   in
     if (is_final sigma) 
     then sigma
@@ -62,4 +62,8 @@ let inject (exp: Expression.expr) : state =
 
 let string_state (sigma : state) : string = 
   let (s, e, c, d) = sigma in 
-  "Stack: [\n"^(str_stack s)^"\nEnv: [\n"^(str_env e)^"\nCtrl: [\n"^(str_ctrl_list c)^"\nDump: [\n"^(str_dump d)
+  (print_stack s)^"\n"^(print_env e)^"\n"^(print_ctrl c)^"\n"^(print_dump d)
+
+let view (sigma: state) : (string * string list) list  = 
+  let (s, e, c, d) = sigma in 
+    [("STACK", str_stack s); ("ADDRENV", str_env e); ("CTRL", str_ctrl_list c);("DUMP", str_dump d)]

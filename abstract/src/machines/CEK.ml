@@ -45,13 +45,13 @@ let is_final (s : state) : bool =
 
 let string_state (sigma : state) : string = 
   let (e, r, k) = sigma in 
-  "C: "^(str_expr e)^"\nEnv: [\n"^(str_env r)^"\nKont: [\n"^(str_kont k)
+  "C: "^(str_expr e)^"\n"^(print_env r)^"\n"^(print_kont k)
 
 let print_state (sigma : state) = 
   let (e, r, k) = sigma in
-    let () = Expression.print_expr Format.std_formatter e
-    and () = Expression.print_env Format.std_formatter r
-    and () = Expression.print_kont Format.std_formatter k in ()
+    let () = Format.fprintf Format.std_formatter "%s" (print_expr e)
+    and () = Format.fprintf Format.std_formatter "%s" (print_env r)
+    and () = Format.fprintf Format.std_formatter "%s" (print_kont k) in ()
 
 let rec terminal (sigma : state) : state =
   let () = print_state sigma
@@ -63,3 +63,7 @@ let rec terminal (sigma : state) : state =
 
 let inject (exp: Expression.expr) : state = 
   let (r : Expression.env) = ValEnv [] in (exp, r, Empty)
+
+let view (sigma: state) : (string * string list) list  = 
+  let (e, r, k) = sigma in 
+    [("EXPR", [str_expr e]); ("VALENV", str_env r); ("KONT", str_kont k)]

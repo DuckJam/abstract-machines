@@ -68,10 +68,11 @@ let is_final (s : state) : bool =
   | _ -> false
 
 let rec terminal (sigma : state) : state =
-  let (e, r, s, _) = sigma in
-    let () =  Expression.print_expr Format.std_formatter e 
-    and () =  Expression.print_env Format.std_formatter r
-    and () = Expression.print_store Format.std_formatter s
+  let (e, r, s, k) = sigma in
+    let () = Format.fprintf Format.std_formatter "%s" (print_expr e)
+    and () = Format.fprintf Format.std_formatter "%s" (print_env r)
+    and () = Format.fprintf Format.std_formatter "%s" (print_store s)
+    and () = Format.fprintf Format.std_formatter "%s" (print_kontstack k)
   in
     if (is_final sigma) 
     then sigma
@@ -86,4 +87,8 @@ let inject (exp: Expression.expr) : state =
 
 let string_state (sigma : state) : string = 
   let (e, r, s, k) = sigma in 
-  "C: "^(str_expr e)^"\nEnv: [\n"^(str_env r)^"\nStore: [\n"^(str_store s)^"\nKont: [\n"^(str_kontstack k)
+  "C: "^(str_expr e)^"\n"^(print_env r)^"\n"^(print_store s)^"\n"^(print_kontstack k)
+
+let view (sigma: state) : (string * string list) list  = 
+  let (e, r, s, k) = sigma in 
+    [("EXPR", [str_expr e]); ("ADDRENV", str_env r); ("STORE", str_store s);("KONT", str_kontstack k)]
