@@ -21,12 +21,13 @@ export default function App() {
     if (!r.ok) { setError(r.error); return; }
     setError(null);
     session.current = api.create(machine, source);
-    setView(session.current?.view());
+    const v = session.current?.view();
+    if (v) show(v); 
   };
   useEffect(load, [api, machine]);   // restart when the machine changes
 
   const act = (f: (s: Session) => View) =>
-    session.current && setView(f(session.current));
+    session.current && show(f(session.current));
 
   const changed = (name: string, items: string[]) =>
   prev !== undefined &&
