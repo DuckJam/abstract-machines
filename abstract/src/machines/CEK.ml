@@ -45,7 +45,7 @@ let is_final (s : state) : bool =
 
 let string_state (sigma : state) : string = 
   let (e, r, k) = sigma in 
-  "C: "^(str_expr e)^"\nEnv: ["^(str_env r)^"\nKont: ["^(str_kont k)
+  "C: "^(str_expr e)^"\nEnv: [\n"^(str_env r)^"\nKont: [\n"^(str_kont k)
 
 let print_state (sigma : state) = 
   let (e, r, k) = sigma in

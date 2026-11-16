@@ -101,7 +101,7 @@ let print_expr ppf (e: expr) =
 
 let rec str_stack (s:stack) = 
   match s with
-  | v::vs -> str_value v ^", "^ str_stack vs
+  | v::vs -> str_value v ^",\n"^ str_stack vs
   | [] -> "]"
 
 let print_stack ppf (s: stack) = Format.fprintf ppf "S: [%s \n" (str_stack s) 
@@ -115,16 +115,16 @@ let str_ctrl (c:ctrl) : string =
 
 let rec str_ctrl_list (c: ctrl list): string =
   match c with
-  | c::cs -> str_ctrl c ^", "^ str_ctrl_list cs
+  | c::cs -> str_ctrl c ^",\n"^ str_ctrl_list cs
   | [] -> "]"
 
 let print_ctrl ppf (c:ctrl list) = Format.fprintf ppf "C: [%s \n" (str_ctrl_list c)
 
 let rec str_env (e: env) : string = 
   match e with
-  | ValEnv ((var, v) :: xs) -> var^" = "^(str_value v)^", "^(str_env  (ValEnv xs))
+  | ValEnv ((var, v) :: xs) -> var^" = "^(str_value v)^",\n"^(str_env  (ValEnv xs))
   | ValEnv [] -> "]"
-  | AddrEnv ((var, addr)::xs) -> var^(Format.sprintf " -> %d" addr)^", "^(str_env  (AddrEnv xs))
+  | AddrEnv ((var, addr)::xs) -> var^(Format.sprintf " -> %d" addr)^",\n"^(str_env  (AddrEnv xs))
   | AddrEnv [] -> "]"
 
 let print_env ppf (e:env) = Format.fprintf ppf "Env: [%s \n" (str_env e)
@@ -141,7 +141,7 @@ let str_storable (s: storable) : string =
 
 let rec str_store (s: store) : string = 
   match s with
-  | (addr, v)::xs -> (Format.sprintf "%d ->" addr)^(str_storable v)^", "^(str_store xs)
+  | (addr, v)::xs -> (Format.sprintf "%d ->" addr)^(str_storable v)^",\n"^(str_store xs)
   | [] -> "]"
 
 let print_store ppf (s:store) = Format.fprintf ppf "Str: [%s \n" (str_store s)
@@ -150,11 +150,11 @@ let print_store ppf (s:store) = Format.fprintf ppf "Str: [%s \n" (str_store s)
 let rec str_kont (k: kont) : string = 
   match k with
   | Empty -> "]"
-  | KAppArg(e, _, k') -> "KArg "^(str_expr e)^", "^(str_kont k')
-  | KAppFun((v,e), _, k') -> "KFun lam "^v^"."^(str_expr e)^", "^(str_kont k')
-  | KBinApp1 (op,  e, _, k') ->"KopL "^(str_op op)^(str_expr e)^", "^(str_kont k')
-  | KBinApp2 (op, v, _, k') -> "KopR "^(str_op op)^(str_value v)^", "^(str_kont k')
-  | KIf (eThen, eElse, _, k') -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)^", "^(str_kont k')
+  | KAppArg(e, _, k') -> "KArg "^(str_expr e)^",\n"^(str_kont k')
+  | KAppFun((v,e), _, k') -> "KFun lam "^v^"."^(str_expr e)^",\n"^(str_kont k')
+  | KBinApp1 (op,  e, _, k') ->"KopL "^(str_op op)^(str_expr e)^",\n"^(str_kont k')
+  | KBinApp2 (op, v, _, k') -> "KopR "^(str_op op)^(str_value v)^",\n"^(str_kont k')
+  | KIf (eThen, eElse, _, k') -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)^",\n"^(str_kont k')
 
 let print_kont ppf (k:kont) = Format.fprintf ppf "K: [%s \n" (str_kont k)
 
@@ -168,12 +168,12 @@ let str_kframe (k : kframe) : string =
 
 let rec str_kontstack (kstack : kontstack) : string =
   match kstack with
-  | (k :: ks) -> (str_kframe k)^", "^(str_kontstack ks)
+  | (k :: ks) -> (str_kframe k)^"\n"^(str_kontstack ks)
   | [] -> "]"
 
-let rec str_dump (d : dump) : string = 
+let rec str_dump (d : dump) : string =
   match d with
-  | (s, e, c):: (ds) -> "S: ["^(str_stack s)^", E: ["^(str_env e)^", C: ["^(str_ctrl_list c)
+  | (s, e, c):: (ds) -> "S: ["^(str_stack s)^",\nE: ["^(str_env e)^",\nC: ["^(str_ctrl_list c)
   | [] -> "]"
 
 let evalBinOp op v1 v2 : value =  

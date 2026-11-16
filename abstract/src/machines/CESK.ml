@@ -66,7 +66,7 @@ let is_final (s : state) : bool =
 
 let string_state (sigma : state) : string = 
   let (c, e, s, k) = sigma in 
-  "C: "^(str_expr c)^"\nEnv: ["^(str_env e)^"\nStack: ["^(str_store s)^"\nKont: ["^(str_kont k)
+  "C: "^(str_expr c)^"\nEnv: [\n"^(str_env e)^"\nStack: [\n"^(str_store s)^"\nKont: [\n"^(str_kont k)
 
 let rec terminal (sigma : state) : state =
   let (c, e, s, k) = sigma in

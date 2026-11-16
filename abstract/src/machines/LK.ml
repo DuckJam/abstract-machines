@@ -86,4 +86,4 @@ let inject (exp: Expression.expr) : state =
 
 let string_state (sigma : state) : string = 
   let (e, r, s, k) = sigma in 
-  "C: "^(str_expr e)^"\nEnv: ["^(str_env r)^"\nStore: ["^(str_store s)^"\nKont: ["^(str_kontstack k)
+  "C: "^(str_expr e)^"\nEnv: [\n"^(str_env r)^"\nStore: [\n"^(str_store s)^"\nKont: [\n"^(str_kontstack k)
