@@ -21,8 +21,8 @@ let step (sigma: state) : state =
   | (s, e, (CExpr (EApp (eFun, eArg)))::c, d) -> 
     (s, e, (CExpr eArg):: (CExpr eFun):: CApp :: c, d)
   
-  | (VClosure((var, exp), e'):: v':: s, ValEnv e, CApp::c, d) ->
-    ([], ValEnv ((var, v')::e), (CExpr exp)::[], (s, ValEnv e, c):: d)
+  | (VClosure((var, exp), ValEnv e'):: v':: s, ValEnv e, CApp::c, d) ->
+    ([], ValEnv ((var, v')::e'), (CExpr exp)::[], (s, ValEnv e, c):: d)
 
   | (s, e, (CExpr (EBinOp (op, e1, e2)))::c, d) -> 
     (s, e, (CExpr e1):: (CExpr e2):: (COp op):: c, d)
