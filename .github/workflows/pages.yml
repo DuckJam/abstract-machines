@@ -9,9 +9,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: abstract
     steps:
       - uses: actions/checkout@v4
       - uses: ocaml/setup-ocaml@v3

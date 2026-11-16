@@ -66,4 +66,4 @@ let string_state (sigma : state) : string =
 
 let view (sigma: state) : (string * string list) list  = 
   let (s, e, c, d) = sigma in 
-    [("STACK", str_stack s); ("ADDRENV", str_env e); ("CTRL", str_ctrl_list c);("DUMP", str_dump d)]
+    [("STACK", str_stack s); ("VALENV", str_env e); ("CTRL", str_ctrl_list c);("DUMP", str_dump d)]
