@@ -4,9 +4,6 @@ type state = (Expression.expr * Expression.env * Expression.store * Expression.k
 
 let name = "LK"
 
-let next_addr (p : Expression.store) : Expression.addr = 
-  if List.is_empty p then 0 else List.length p + 1
-
 let step (sigma: state): state = 
   match sigma with
   | (EVar x, AddrEnv r, s, k) ->    

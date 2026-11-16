@@ -46,9 +46,11 @@ let is_final (s : state) : bool =
     | _ -> false
 
 let rec terminal (sigma : state) : state =
-  let (s, _, c, _) = sigma in 
+  let (s, e, c, d) = sigma in 
     let () = Format.fprintf Format.std_formatter "%s" (print_ctrl c)
+    and () = Format.fprintf Format.std_formatter "%s" (print_env e)
     and () = Format.fprintf Format.std_formatter "%s" (print_stack s)
+    and () = Format.fprintf Format.std_formatter "%s" (print_dump d)
   in
     if (is_final sigma) 
     then sigma
