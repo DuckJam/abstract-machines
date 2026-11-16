@@ -1,11 +1,15 @@
 open Expression
 let () = Format.fprintf Format.std_formatter "\nCEK \n" ;;
 
-let expr = EApp (
-    EAbs("x",
-      EBinOp(Mul, EVar "x", EInt 9)
-    ), 
+let expr = 
+  EApp(
+    EApp(
+      EAbs("x",
+        EAbs("y", EBinOp(Mul, EVar "x", EVar "y"))
+      ), 
     (EInt 5)
+    ), 
+  (EInt 9)
   ) in Machines.CEK.terminal (Machines.CEK.inject expr);;
 
 (*
@@ -20,21 +24,29 @@ let open Expression in
 
 let () = Format.fprintf Format.std_formatter "\nCESK \n" ;;
 
-let expr = EApp (
-    EAbs("x",
-      EBinOp(Mul, EVar "x", EInt 9)
-    ), 
+let expr = 
+  EApp(
+    EApp(
+      EAbs("x",
+        EAbs("y", EBinOp(Mul, EVar "x", EVar "y"))
+      ), 
     (EInt 5)
+    ), 
+  (EInt 9)
   ) in Machines.CESK.terminal (Machines.CESK.inject expr);;
 
 
 let () = Format.fprintf Format.std_formatter "\nLK \n" ;;
 
-let expr = EApp (
-    EAbs("x",
-      EBinOp(Mul, EVar "x", EInt 9)
-    ), 
+let expr = 
+  EApp(
+    EApp(
+      EAbs("x",
+        EAbs("y", EBinOp(Mul, EVar "x", EVar "y"))
+      ), 
     (EInt 5)
+    ), 
+  (EInt 9)
   ) in Machines.LK.terminal (Machines.LK.inject expr);;
 (*
 let open Expression in
@@ -48,11 +60,15 @@ let open Expression in
 
 let () = Format.fprintf Format.std_formatter "\nSECD\n" ;;
 
-let expr = EApp (
-    EAbs("x",
-      EBinOp(Mul, EVar "x", EInt 9)
-    ), 
+let expr =
+  EApp(
+    EApp(
+      EAbs("x",
+        EAbs("y", EBinOp(Mul, EVar "x", EVar "y"))
+      ), 
     (EInt 5)
+    ), 
+  (EInt 9)
   ) in Machines.SECD.terminal (Machines.SECD.inject expr);;
 (*
 let open Expression in
