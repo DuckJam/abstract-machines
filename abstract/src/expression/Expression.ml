@@ -113,12 +113,12 @@ let str_ctrl (c:ctrl) : string =
   | COp op -> str_op op
   | CIf -> "If"
 
-let rec prnt_ctrl (c: ctrl list): string =
+let rec str_ctrl_list (c: ctrl list): string =
   match c with
   | c::cs -> str_ctrl c ^", "^ prnt_ctrl cs
   | [] -> "]"
 
-let print_ctrl ppf (c:ctrl list) = Format.fprintf ppf "C: [%s \n" (prnt_ctrl c)
+let print_ctrl ppf (c:ctrl list) = Format.fprintf ppf "C: [%s \n" (str_ctrl_list c)
 
 let rec str_env (e: env) : string = 
   match e with
@@ -157,6 +157,19 @@ let rec str_kont (k: kont) : string =
   | KIf (eThen, eElse, _, k') -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)^", "^(str_kont k')
 
 let print_kont ppf (k:kont) = Format.fprintf ppf "K: [%s \n" (str_kont k)
+
+let str_kframe (k : kframe) : string = 
+  match k with
+  | KFun a -> "KFun"^(Format.sprintf "-> %d" a)
+  | KArg a -> "KArg"^(Format.sprintf "-> %d" a)
+  | KOpLeft (o, ex, en) -> "KOpL "^(str_op o)^" e:"^(str_expr ex)^" "^(str_env en)
+  | KOpRight (o, v) -> "KOpR "^(str_op o)^" "^(str_value v)
+  | KIf (eThen, eElse) -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)
+
+let rec str_kontstack (kstack : kontstack) : string =
+  match ktack with
+  | (k : ks) -> (str_kframe k)^", "^(str_kontstack ks)
+  | [] -> "]"
 
 let evalBinOp op v1 v2 : value =  
   match v1, v2 with 
