@@ -131,7 +131,7 @@ let rec str_kont (k: kont) : string =
   | KAppArg(e, _, k') -> "KArg "^(str_expr e)^",\n"^(str_kont k')
   | KAppFun((v,e), _, k') -> "KFun lam "^v^"."^(str_expr e)^",\n"^(str_kont k')
   | KBinApp1 (op,  e, _, k') ->"KopL "^(str_op op)^(str_expr e)^",\n"^(str_kont k')
-  | KBinApp2 (op, v, _, k') -> "KopR "^(str_op op)^(str_value v)^",\n"^(str_kont k')
+  | KBinApp2 (op, v, _, k') -> "KopR "^(str_value v)^(str_op op)^",\n"^(str_kont k')
   | KIf (eThen, eElse, _, k') -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)^",\n"^(str_kont k')
 
 let print_kont ppf (k:kont) = Format.fprintf ppf "K: [%s \n" (str_kont k)
