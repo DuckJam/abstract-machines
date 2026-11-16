@@ -62,4 +62,4 @@ let inject (exp: Expression.expr) : state =
 
 let string_state (sigma : state) : string = 
   let (s, e, c, d) = sigma in 
-  "S: ["^(str_stack s)^"\nE: "^(str_env e)^"\nC: "^(str_ctrl_list c)
+  "Stack: ["^(str_stack s)^"\nEnv: ["^(str_env e)^"\nCtrl: ["^(str_ctrl_list c)^"\n Dump: ["^(str_dump d)
