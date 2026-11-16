@@ -115,7 +115,7 @@ let str_ctrl (c:ctrl) : string =
 
 let rec str_ctrl_list (c: ctrl list): string =
   match c with
-  | c::cs -> str_ctrl c ^", "^ prnt_ctrl cs
+  | c::cs -> str_ctrl c ^", "^ str_ctrl_list cs
   | [] -> "]"
 
 let print_ctrl ppf (c:ctrl list) = Format.fprintf ppf "C: [%s \n" (str_ctrl_list c)
@@ -164,11 +164,11 @@ let str_kframe (k : kframe) : string =
   | KArg a -> "KArg"^(Format.sprintf "-> %d" a)
   | KOpLeft (o, ex, en) -> "KOpL "^(str_op o)^" e:"^(str_expr ex)^" "^(str_env en)
   | KOpRight (o, v) -> "KOpR "^(str_op o)^" "^(str_value v)
-  | KIf (eThen, eElse) -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)
+  | KIf (eThen, eElse, _) -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)
 
 let rec str_kontstack (kstack : kontstack) : string =
-  match ktack with
-  | (k : ks) -> (str_kframe k)^", "^(str_kontstack ks)
+  match kstack with
+  | (k :: ks) -> (str_kframe k)^", "^(str_kontstack ks)
   | [] -> "]"
 
 let evalBinOp op v1 v2 : value =  
