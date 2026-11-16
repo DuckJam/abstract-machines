@@ -1,8 +1,10 @@
-
 open Expression
+
 type state = (expr * env * store * kont)
 
-let next_addr (p : tore) : addr = 
+let name = "CESK"
+
+let next_addr (p : store) : addr = 
   if List.is_empty p then 0 else List.length p + 1
 
 let step (sigma : state) : state = 

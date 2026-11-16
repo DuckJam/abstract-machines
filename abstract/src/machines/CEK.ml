@@ -1,5 +1,8 @@
 open Expression
+
 type state = (expr * env * kont)
+
+let name = "CEK"
 
 let step (s: state) : state = 
   match s with

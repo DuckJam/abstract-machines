@@ -1,6 +1,8 @@
-
 open Expression
+
 type state = (Expression.stack * Expression.env * (Expression.ctrl list) * Expression.dump)
+
+let name = "SECD"
 
 let step (sigma: state) : state = 
   match sigma with
