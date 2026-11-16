@@ -1,5 +1,4 @@
 open Js_of_ocaml
-open Expression
 module Machine = Machines.Machine
 
 let machines : (module Machine.S) list =
@@ -46,18 +45,25 @@ let make_session (module M : Machine.S) expr : session =
       | Some e -> s^"\n\nError: "^e);
   }
 
-let expr_If = 
-  let expr = EApp (EAbs("x", EBinOp(Mul, EVar "x", EInt 9)), (EBinOp (Add, (EInt 5), (EInt 6))))
-  and expr_cond = EBinOp(Gt, EInt 3, EInt 5) in
-  EIf(expr_cond, expr_cond, expr)
+let parse_result s = 
+  try Ok (Expression.parse s) with
+  | Expression.Lexer.Lexing_error m -> Error m 
+  | Expression.Parser.Error -> Error "syntax error"
+
+let get_el id coerce =
+  match Dom_html.getElementById_coerce id coerce with
+    | Some e -> e
+    | None -> failwith ("missing element #"^id)
+
+let default_text = "(fun x -> x + 1) 2"
 
 let () = 
   Dom_html.window##.onload := Dom_html.handler (fun _ ->
     let doc = Dom_html.document in
-    let select = 
-      match Dom_html.getElementById_coerce "machine" Dom_html.CoerceTo.select with
-      | Some s -> s
-      | None -> failwith "missing <select id=\"machine\">"
+    let select = get_el "machine" Dom_html.CoerceTo.select in
+    let input = get_el "expr" Dom_html.CoerceTo.select in
+    let set_text id s =
+      (Dom_html.getElementById id)##.textContent := Js.some (Js.string s)
     in
     List.iteri (fun i (module M : Machine.S) ->
       let opt = Dom_html.createOption doc in
@@ -65,24 +71,37 @@ let () =
       opt##.value := Js.string (string_of_int i);
       Dom.appendChild select opt)
       machines;
-    let expr = expr_If in 
-    let session = ref (make_session (List.hd machines) expr) in
-    let render () = 
-      (Dom_html.getElementById "state")##.textContent :=
-        Js.some (Js.string (!session.view ()))
+    
+    let current_machine () = List.nth machines select##.selectedIndex in
+    let expr = ref Expression.expr_If in 
+    let session = ref (make_session (List.hd machines) !expr) in
+    let render () = set_text "state" (!session.view ()) in
+
+    let load () = 
+      match parse_result (Js.to_string input##.value) with
+      | Ok e ->
+        expr := e;
+        session := make_session (current_machine ()) e;
+        set_text "error" ""
+      | Error m -> set_text "error" ("Parse error: "^m)
     in
+
     let on_click id f = 
       (Dom_html.getElementById id)##.onclick := 
         Dom_html.handler (fun _ -> f (); render (); Js._true) 
     in
+    on_click "load" load;
     on_click "step" (fun () -> !session.step ());
     on_click "run" (fun () -> !session.run ());
     on_click "back" (fun () -> !session.back ());
     on_click "reset" (fun ()-> !session.reset ());
 
     select##.onchange := Dom_html.handler (fun _ ->
-      session := make_session (List.nth machines select##.selectedIndex) expr;
+      session := make_session (current_machine ()) !expr;
       render ();
       Js._true);
+    
+    input##.value := Js.string default_text;
+    load ();
     render ();
     Js._true);
