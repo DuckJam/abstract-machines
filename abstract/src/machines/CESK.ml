@@ -42,7 +42,7 @@ let step (sigma : state) : state =
     | _ -> 
       match k' with 
       | KBinApp1 (op, e2, r, k) -> (e2, r, s, KBinApp2(op, v, r, k))
-      | KBinApp2 (op, v2, r, k) -> (EReturn(evalBinOp op v v2), r, s, k)
+      | KBinApp2 (op, v1, r, k) -> (EReturn(evalBinOp op v1 v), r, s, k)
       | KAppArg (e, r, k) -> (e, r, s, k)
       | KAppFun ((var, e), AddrEnv r, k)-> 
         let a = next_addr s in
