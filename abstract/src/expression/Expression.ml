@@ -55,13 +55,13 @@ let str_op (o: op): string =
   | LEq -> "<="
   | GEq -> ">="
 
-let str_value (v: value): string  =
+let rec str_value (v: value): string  =
   match v with
-  | VClosure ((v, e), _)-> "closure lam "^v
+  | VClosure ((v, ex), en)-> "closure lam "^v^"."^(str_expr ex)^" env["^(str_env en)
   | VInt n -> Format.sprintf "%d" n
   | VBool b -> Format.sprintf "%b" b
 
-let rec str_expr (e : expr) : string = 
+and str_expr (e : expr) : string = 
   match e with
   | EVar x -> Format.sprintf "var %s" x
   | EApp (e1, e2) -> Format.sprintf  "%s (%s)" (str_expr e1) (str_expr e2)
@@ -71,7 +71,13 @@ let rec str_expr (e : expr) : string =
   | EBinOp (op, e1, e2) -> Format.sprintf  "%s %s %s"  (str_expr e1) (str_op op) (str_expr e2)
   | EReturn v -> Format.sprintf "Return %s" (str_value v)
   | EIf (e1, e2, e3) -> Format.sprintf "if %s then %s else %s" (str_expr e1) (str_expr e2) (str_expr e3)
-;;
+
+and str_env (e: env) : string = 
+  match e with
+  | ValEnv ((var, v) :: xs) -> var^" = "^(str_value v)^",\n"^(str_env  (ValEnv xs))
+  | ValEnv [] -> "]"
+  | AddrEnv ((var, addr)::xs) -> var^(Format.sprintf " -> %d" addr)^",\n"^(str_env  (AddrEnv xs))
+  | AddrEnv [] -> "]"
 
 let print_expr ppf (e: expr) = 
   Format.fprintf ppf "%s \n" (str_expr e)
@@ -98,12 +104,7 @@ let rec str_ctrl_list (c: ctrl list): string =
 
 let print_ctrl ppf (c:ctrl list) = Format.fprintf ppf "C: [%s \n" (str_ctrl_list c)
 
-let rec str_env (e: env) : string = 
-  match e with
-  | ValEnv ((var, v) :: xs) -> var^" = "^(str_value v)^",\n"^(str_env  (ValEnv xs))
-  | ValEnv [] -> "]"
-  | AddrEnv ((var, addr)::xs) -> var^(Format.sprintf " -> %d" addr)^",\n"^(str_env  (AddrEnv xs))
-  | AddrEnv [] -> "]"
+
 
 let print_env ppf (e:env) = Format.fprintf ppf "Env: [%s \n" (str_env e)
 
@@ -140,7 +141,7 @@ let str_kframe (k : kframe) : string =
   match k with
   | KFun a -> "KFun"^(Format.sprintf "-> %d" a)
   | KArg a -> "KArg"^(Format.sprintf "-> %d" a)
-  | KOpLeft (o, ex, en) -> "KOpL "^(str_op o)^" e:"^(str_expr ex)^" "^(str_env en)
+  | KOpLeft (o, ex, en) -> "KOpL "^(str_op o)^" "^(str_expr ex)^" env: ["^(str_env en)
   | KOpRight (o, v) -> "KOpR "^(str_value v)^" "^(str_op o)
   | KIf (eThen, eElse, _) -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)
 
