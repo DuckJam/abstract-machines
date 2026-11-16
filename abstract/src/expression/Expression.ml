@@ -1,32 +1,7 @@
-type op = Add | Mul | Sub | Div | Eq | Lt | Gt | LEq | GEq
-type var = string
-type addr = int
+include AST
+module Lexer = Lexer
+module Parser = Parser
 
-type expr = 
-    EVar of var 
-  | EAbs of lambda
-  | EApp of (expr * expr)
-  | EInt of int 
-  | EBool of bool
-  | EBinOp of (op * expr * expr)
-  | EReturn of value
-  | EIf of (expr * expr * expr)
-
-and lambda = (var * expr)
-and value = 
-    VClosure of (lambda * env)
-  | VInt of int
-  | VBool of bool
-(* domain of values / dentorable values , 
-closure is lambda term paired with environment that defines the values of its free variables*)
-
-and env = 
-    ValEnv of (var * value) list
-  | AddrEnv of (var * addr) list
-(* store env = (var * addr) list *)
-
-
-(*list.assoc key alist (kxV list _> k ->V)*)
 type kont = Empty 
   | KAppArg of (expr * env * kont)
   | KAppFun of (lambda * env * kont)
@@ -64,6 +39,9 @@ type kframe =
   | KIf of expr * expr * env
 
 type kontstack = kframe list
+
+let parse (s: string) : expr =
+  Parser.main Lexer.token (Lexing.from_string s)
 
 let str_op (o: op): string =
   match o with
@@ -203,3 +181,7 @@ let evalBinOp op v1 v2 : value =
   | _ , _-> invalid_arg "mismatch of types in binop"
 ;;
 
+let expr_If = 
+  let expr = EApp (EAbs("x", EBinOp(Mul, EVar "x", EInt 9)), (EBinOp (Add, (EInt 5), (EInt 6))))
+  and expr_cond = EBinOp(Gt, EInt 3, EInt 5) in
+  EIf(expr_cond, expr_cond, expr)
