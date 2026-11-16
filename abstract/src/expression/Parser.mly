@@ -1,5 +1,5 @@
 %{
-    open AST
+  open AST
 %}
 
 %token <int> INT 
@@ -8,6 +8,8 @@
 
 %nonassoc LT GT GEQ LEQ
 %left PLUS MINUS STAR DIV
+
+%type <expr> expr binop atom
 
 %start <expr> main
 %%
