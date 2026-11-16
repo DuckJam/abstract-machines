@@ -47,9 +47,9 @@ let make_session (module M : Machine.S) expr : session =
   }
 
 let expr_If = 
-  let expr = EApp (EAbs("x", EBinOp(Mul, EVar "x", EInt 9)), (EInt 5))
+  let expr = EApp (EAbs("x", EBinOp(Mul, EVar "x", EInt 9)), (EBinOp (Add, (EInt 5), (EInt 6))))
   and expr_cond = EBinOp(Gt, EInt 3, EInt 5) in
-  EIf(expr_cond, expr_cond,expr)
+  EIf(expr_cond, expr_cond, expr)
 
 let () = 
   Dom_html.window##.onload := Dom_html.handler (fun _ ->
