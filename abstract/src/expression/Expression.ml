@@ -86,7 +86,7 @@ let str_value (v: value): string  =
 let rec str_expr (e : expr) : string = 
   match e with
   | EVar x -> Format.sprintf "var %s" x
-  | EApp (e1, e2) -> Format.sprintf  "%s %s" (str_expr e1) (str_expr e2)
+  | EApp (e1, e2) -> Format.sprintf  "%s (%s)" (str_expr e1) (str_expr e2)
   | EAbs (v, e) -> Format.sprintf "lam %s %s" v (str_expr e)
   | EInt n -> Format.sprintf "Int %d" n
   | EBool b -> Format.sprintf  "Bool %b" b
@@ -163,12 +163,17 @@ let str_kframe (k : kframe) : string =
   | KFun a -> "KFun"^(Format.sprintf "-> %d" a)
   | KArg a -> "KArg"^(Format.sprintf "-> %d" a)
   | KOpLeft (o, ex, en) -> "KOpL "^(str_op o)^" e:"^(str_expr ex)^" "^(str_env en)
-  | KOpRight (o, v) -> "KOpR "^(str_op o)^" "^(str_value v)
+  | KOpRight (o, v) -> "KOpR "^(str_value v)^" "^(str_op o)
   | KIf (eThen, eElse, _) -> "Kif t: "^(str_expr eThen)^" e: "^(str_expr eElse)
 
 let rec str_kontstack (kstack : kontstack) : string =
   match kstack with
   | (k :: ks) -> (str_kframe k)^", "^(str_kontstack ks)
+  | [] -> "]"
+
+let rec str_dump (d : dump) : string = 
+  match d with
+  | (s, e, c):: (ds) -> "S: ["^(str_stack s)^", E: ["^(str_env e)^", C: ["^(str_ctrl_list c)
   | [] -> "]"
 
 let evalBinOp op v1 v2 : value =  
