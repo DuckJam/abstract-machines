@@ -1,4 +1,5 @@
 
+open Expression
 type state = (Expression.stack * Expression.env * (Expression.ctrl list) * Expression.dump)
 
 let step (sigma: state) : state = 
@@ -37,7 +38,7 @@ let step (sigma: state) : state =
   | _ -> failwith "invalid state for SECD machine"
 
 
-let isFinal (s : state) : bool = 
+let is_final (s : state) : bool = 
     match s with
     |(v::[], _, [], []) -> true
     | _ -> false
@@ -47,7 +48,7 @@ let rec terminal (sigma : state) : state =
     let () = Expression.print_ctrl Format.std_formatter c
     and () = Expression.print_stack Format.std_formatter s
   in
-    if (isFinal sigma) 
+    if (is_final sigma) 
     then sigma
     else terminal (step sigma)
 
@@ -56,3 +57,7 @@ let inject (exp: Expression.expr) : state =
   let (e : Expression.env) = ValEnv [] 
   and c = Expression.CExpr exp
   in ([], e, c::[], [])
+
+let string_state (sigma : state) : string = 
+  let (s, e, c, d) = sigma in 
+  "S: ["^(str_stack s)^"\nE: "^(str_env e)^"\nC: "^(str_ctrl_list c)

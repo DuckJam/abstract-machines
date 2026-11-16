@@ -1,7 +1,8 @@
 
-type state = (Expression.expr * Expression.env * Expression.store * Expression.kont)
+open Expression
+type state = (expr * env * store * kont)
 
-let next_addr (p : Expression.store) : Expression.addr = 
+let next_addr (p : tore) : addr = 
   if List.is_empty p then 0 else List.length p + 1
 
 let step (sigma : state) : state = 
@@ -20,7 +21,7 @@ let step (sigma : state) : state =
 
   | (EAbs lam, r, s, KAppFun ((var, e), AddrEnv r', k )) -> 
     let a = next_addr s in
-    let s' = (a, (Expression.SValue (VClosure(lam, r)))) :: s in 
+    let s' = (a, (SValue (VClosure(lam, r)))) :: s in 
     (e, AddrEnv ((var, a) :: r'), s' , k)
 
   | (EAbs lam, r, s, k) -> (EReturn(VClosure(lam, r)), r, s, k) 
@@ -39,11 +40,11 @@ let step (sigma : state) : state =
     | _ -> 
       match k' with 
       | KBinApp1 (op, e2, r, k) -> (e2, r, s, KBinApp2(op, v, r, k))
-      | KBinApp2 (op, v2, r, k) -> (EReturn(Expression.evalBinOp op v v2), r, s, k)
+      | KBinApp2 (op, v2, r, k) -> (EReturn(evalBinOp op v v2), r, s, k)
       | KAppArg (e, r, k) -> (e, r, s, k)
       | KAppFun ((var, e), AddrEnv r, k)-> 
         let a = next_addr s in
-        let s' = (a, Expression.SValue v)::s in
+        let s' = (a, SValue v)::s in
         (e, AddrEnv ((var, a)::r), s', k)
       | KIf(eThen, eElse, r, k) -> (
         match v with VBool b -> 
@@ -56,10 +57,14 @@ let step (sigma : state) : state =
       )
   | (_, _, _, _) -> invalid_arg "invalid state for CESK machine"
 
-let isFinal (s : state) : bool = 
+let is_final (s : state) : bool = 
     match s with
     |(EReturn _, _, _, Empty) -> true
     | _ -> false
+
+let string_state (sigma : state) : string = 
+  let (c, e, s, k) = sigma in 
+  "C: "^(str_expr c)^"\nEnv: ["^(str_env e)^"\nStack: ["^(str_store s)^"\nKont: ["^(str_kont k)
 
 let rec terminal (sigma : state) : state =
   let (c, e, s, k) = sigma in
@@ -68,7 +73,7 @@ let rec terminal (sigma : state) : state =
     and () = Expression.print_store Format.std_formatter s
     and () = Expression.print_kont Format.std_formatter k
   in
-    if (isFinal sigma) 
+    if (is_final sigma) 
     then sigma
     else terminal (step sigma)
 

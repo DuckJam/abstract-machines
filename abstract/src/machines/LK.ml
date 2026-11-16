@@ -1,3 +1,5 @@
+open Expression
+
 type state = (Expression.expr * Expression.env * Expression.store * Expression.kontstack)
 
 let next_addr (p : Expression.store) : Expression.addr = 
@@ -58,7 +60,7 @@ let step (sigma: state): state =
   | _ -> invalid_arg "expression not implemented for krivine"
 
 
-let isFinal (s : state) : bool = 
+let is_final (s : state) : bool = 
   match s with
   |(EReturn _, _, _, []) -> true
   | _ -> false
@@ -69,7 +71,7 @@ let rec terminal (sigma : state) : state =
     and () =  Expression.print_env Format.std_formatter r
     and () = Expression.print_store Format.std_formatter s
   in
-    if (isFinal sigma) 
+    if (is_final sigma) 
     then sigma
     else terminal (step sigma)
 
@@ -79,3 +81,7 @@ let inject (exp: Expression.expr) : state =
   and (p : Expression.store) = []
   and (k : Expression.kontstack) = []
   in (exp, r, p, k)
+
+let string_state (sigma : state) : string = 
+  let (e, r, s, k) = sigma in 
+  "C: "^(str_expr e)^"\nEnv: ["^(str_env r)^"\n S:"^(str_store s)^"\nKont: ["^(str_kontstack k)

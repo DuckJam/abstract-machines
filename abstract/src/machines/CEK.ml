@@ -35,13 +35,14 @@ let step (s: state) : state =
       | _  -> invalid_arg "trying to evaluate empty kont"
 
 
-let isFinal (s : state) : bool = 
+let is_final (s : state) : bool = 
     match s with
     |(EReturn _, _, Empty) -> true
     | _ -> false
 
 let string_state (sigma : state) : string = 
-  let (e, r, k) = sigma in "C: "^(Expression.str_expr e)^"\nEnv: ["^(Expression.str_env r)^"\nKont: ["^(Expression.str_kont k)
+  let (e, r, k) = sigma in 
+  "C: "^(str_expr e)^"\nEnv: ["^(str_env r)^"\nKont: ["^(str_kont k)
 
 let print_state (sigma : state) = 
   let (e, r, k) = sigma in
@@ -52,7 +53,7 @@ let print_state (sigma : state) =
 let rec terminal (sigma : state) : state =
   let () = print_state sigma
   in 
-    if (isFinal sigma) 
+    if (is_final sigma) 
     then sigma
     else terminal (step sigma)
 
